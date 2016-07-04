@@ -127,7 +127,7 @@ UBYTE keyPressSELECT(UBYTE key) {
 }
 
 //Level map
-const unsigned char TILE_LEVEL_MAP[] =
+const unsigned char LEVEL_COLLISION_MAP[] =
 {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -185,7 +185,7 @@ const unsigned char TILE_LEVEL_MAP[] =
   0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01
 };
 //Tiles level 8x8
-const unsigned char TILE_LEVEL_DATA[] =
+const unsigned char LEVEL_TILES[] =
 {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -202,7 +202,7 @@ const unsigned char TILE_LEVEL_DATA[] =
 };
 
 //Tiles sprites 8x16
-const unsigned char TILES_DATA[] =
+const unsigned char SPRITE_TILES[] =
 {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -410,7 +410,7 @@ UINT16 isCollisonDown(UINT16 x, UINT16 y, UINT16 w, UINT16 h) {
         indXY = (indY * TILES_WIDTH) + indX;
 
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
         //Se repite posicionando el supuesto movimiento 7 pixels a la derecha (Anchor izquierda | arriba)
@@ -418,7 +418,7 @@ UINT16 isCollisonDown(UINT16 x, UINT16 y, UINT16 w, UINT16 h) {
         //Convierte los index x/y en xy
         indXY = (indY * TILES_WIDTH) + indX;
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
     }
@@ -443,7 +443,7 @@ UINT16 isCollisionUp(UINT16 x, UINT16 y, UINT16 w) {
         indXY = (indY * TILES_WIDTH) + indX;
 
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
         //Se repite posicionando el supuesto movimiento 7 pixels a la derecha (Anchor izquierda | arriba)
@@ -451,7 +451,7 @@ UINT16 isCollisionUp(UINT16 x, UINT16 y, UINT16 w) {
         //Convierte los index x/y en xy
         indXY = (indY * TILES_WIDTH) + indX;
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
            return indXY;
         }
     }
@@ -476,7 +476,7 @@ UINT16 isCollisionRight(UINT16 x, UINT16 y, UINT16 w, UINT16 h) {
         indXY = (indY * TILES_WIDTH) + indX;
 
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
         //Se repite posicionando el supuesto movimiento 7 pixels abajo (Anchor izquierda | arriba)
@@ -484,7 +484,7 @@ UINT16 isCollisionRight(UINT16 x, UINT16 y, UINT16 w, UINT16 h) {
         //Convierte los index x/y en xy
         indXY = (indY * TILES_WIDTH) + indX;
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
     }
@@ -509,7 +509,7 @@ UINT16 isCollisionLeft(UINT16 x, UINT16 y, UINT16 h) {
         indXY = (indY * TILES_WIDTH) + indX;
 
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
         //Se repite posicionando el supuesto movimiento 7 pixels abajo (Anchor izquierda | arriba)
@@ -517,7 +517,7 @@ UINT16 isCollisionLeft(UINT16 x, UINT16 y, UINT16 h) {
         //Convierte los index x/y en xy
         indXY = (indY * TILES_WIDTH) + indX;
         //Recupero el tile
-        if(TILE_LEVEL_MAP[indXY] != 0x00) {
+        if(LEVEL_COLLISION_MAP[indXY] != 0x00) {
             return indXY;
         }
     }
@@ -580,14 +580,14 @@ void main() {
     //set_bkg_tiles(0, 0, 20, 18, LEVEL_MAP);
 
     //Tiles plataformas
-    set_bkg_data(0, 3, TILE_LEVEL_DATA);
+    set_bkg_data(0, 3, LEVEL_TILES);
     //Pharams: x, y, width, height, mapa
-    set_bkg_tiles(0, 0, TILES_WIDTH, TILES_HEIGHT, TILE_LEVEL_MAP);
+    set_bkg_tiles(0, 0, TILES_WIDTH, TILES_HEIGHT, LEVEL_COLLISION_MAP);
 
     //Sprites
     //Carga en la VRAM los tiles para los sprites
     //Pharams: posicion de memoria, cantidad de tiles, tiles
-    set_sprite_data(0, TOTAL_TILES, TILES_DATA);
+    set_sprite_data(0, TOTAL_TILES, SPRITE_TILES);
 
     SPRITES_8x16;
     //Asigna a un sprite un tile
