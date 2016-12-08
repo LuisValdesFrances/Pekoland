@@ -1,1 +1,1 @@
-lcc -o pekoland.gb pekoland.c
+lcc -o pekoland.gb src/pekoland.c src/collision.c

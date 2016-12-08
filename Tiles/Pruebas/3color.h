@@ -1,6 +1,6 @@
 /*
 
- SPRITETILES.H
+ 3COLOR.H
 
  Include File.
 
@@ -9,8 +9,8 @@
   Format               : Gameboy 4 color.
   Compression          : None.
   Counter              : None.
-  Tile size            : 8 x 16
-  Tiles                : 0 to 19
+  Tile size            : 8 x 8
+  Tiles                : 0 to 3
 
   Palette colors       : None.
   SGB Palette          : None.
@@ -24,8 +24,8 @@
 
 
 /* Bank of tiles. */
-#define SPRITE_TILESBank 0
+#define LEVEL_TILESBank 0
 /* Start of tile array. */
-extern unsigned char SPRITE_TILES[];
+extern unsigned char LEVEL_TILES[];
 
-/* End of SPRITETILES.H */
+/* End of 3COLOR.H */
