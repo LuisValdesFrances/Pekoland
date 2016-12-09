@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <time.h>
 #include <gb/drawing.h>
-#include "spriteTiles.h"
-#include "maps.h"
 #include "collision.h"
 
 #define TRUE 1
@@ -17,7 +15,7 @@
 #define GRAVITY 4
 
 //CHARACTERS
-#define MAX_ENEMY_NUMBER 2//Limite esta en 4
+#define MAX_ENEMY_NUMBER 1//Limite esta en 4
 //Payer
 #define PLAYER_WIDTH 8
 #define PLAYER_HEIGHT 16
@@ -45,6 +43,67 @@
 #define STATE_IDLE 0
 #define STATE_RUN 1
 #define STATE_JUMP 2
+
+/**
+Datos del mapa maps.c Los arrays estan implementados en maps.c
+*/
+#define MAP_SIZE_X 64
+#define MAP_SIZE_Y 18
+#define LEVEL_WIDTH (MAP_SIZE_X * 8)
+#define LEVEL_HEIGHT (MAP_SIZE_Y * 8)
+
+/**
+Posicion de los tiles. El array esta implementado en spriteTiles.c
+*/
+#define TILE_0 0
+#define TILE_1 (TILE_0 + SPRITES_MODE)
+#define TILE_2 (TILE_1 + SPRITES_MODE)
+#define TILE_3 (TILE_2 + SPRITES_MODE)
+#define TILE_4 (TILE_3 + SPRITES_MODE)
+#define TILE_5 (TILE_4 + SPRITES_MODE)
+#define TILE_6 (TILE_5 + SPRITES_MODE)
+#define TILE_7 (TILE_6 + SPRITES_MODE)
+#define TILE_8 (TILE_7 + SPRITES_MODE)
+#define TILE_9 (TILE_8 + SPRITES_MODE)
+#define TILE_PLAYER_IDLE_F1 20
+#define TILE_PLAYER_IDLE_F2 22
+#define TILE_PLAYER_RUN_F1 24
+#define TILE_PLAYER_RUN_F2 26
+#define TILE_PLAYER_RUN_F3 28
+#define TILE_PLAYER_JUMP_UP 30
+#define TILE_PLAYER_JUMP_DOWN 32
+#define TILE_ENEMY_POPO_IDLE_F1 34
+#define TILE_ENEMY_POPO_IDLE_F2 36
+#define TILE_BLANK 38
+#define TOTAL_TILES 40 //Total + 2
+
+//Sprites (Maximo 39)
+#define SPRITE_DIGIT_1A 0
+#define SPRITE_DIGIT_2A SPRITE_DIGIT_1A + 1
+#define SPRITE_DIGIT_3A SPRITE_DIGIT_2A + 1
+#define SPRITE_DIGIT_4A SPRITE_DIGIT_3A + 1
+#define SPRITE_DIGIT_5A SPRITE_DIGIT_4A + 1
+//Digits
+#define SPRITE_DIGIT_1B SPRITE_DIGIT_5A + 1
+#define SPRITE_DIGIT_2B SPRITE_DIGIT_1B + 1
+#define SPRITE_DIGIT_3B SPRITE_DIGIT_2B + 1
+#define SPRITE_DIGIT_4B SPRITE_DIGIT_3B + 1
+#define SPRITE_DIGIT_5B SPRITE_DIGIT_4B + 1
+//Player animations
+#define SPRITE_PLAYER SPRITE_DIGIT_5B + 1 //32
+//Enemy Popo animations
+#define SPRITE_ENEMY_1 SPRITE_PLAYER + 1
+#define SPRITE_ENEMY_2 SPRITE_ENEMY_1 + 1
+#define SPRITE_ENEMY_3 SPRITE_ENEMY_2 + 1
+#define SPRITE_ENEMY_4 SPRITE_ENEMY_3 + 1
+#define SPRITE_ENEMY_5 SPRITE_ENEMY_4 + 1
+#define SPRITE_ENEMY_6 SPRITE_ENEMY_5 + 1
+#define SPRITE_ENEMY_7 SPRITE_ENEMY_6 + 1
+#define SPRITE_ENEMY_8 SPRITE_ENEMY_7 + 1
+
+extern const unsigned char MAP_TILES[];//Informacion de los tiles (imagenes)
+extern const unsigned char SPRITE_TILES[];//Informacion de los tiles (imagenes)
+extern const unsigned char LEVEL1[];//Colisiones y distribucion
 
 UINT8 getNumberDigits(UINT16 number, UINT8 c);
 UINT8 getDigit(UINT16 number, UINT8 digit);
@@ -213,7 +272,7 @@ UINT16 getCameraX(UINT16 objX) {
         return 0;
     }
 }
-UBYTE isInScreen(UINT16 scrollX, UINT16 scrollY, UINT16 x, UINT16 y, UINT16 width, UINT16 height){
+UBYTE isInScreen(UINT16 scrollX, UINT16 x, UINT16 width){
     if(x < scrollX + SCREEN_WIDTH && x + width > scrollX){
         return TRUE;
     }else{
@@ -257,10 +316,8 @@ UINT16 getGravitySpeed(UINT16 gravityForce, UINT16 weight){
     /*
     Regla de tres
     (Las pruebas se hicieron con desplazamientos de 8 (3 bits), de esta manera, si se cambia esto, la fisica se adapta)
-
     8               = gravityForce
     PRECISION_BITS  = newGravityForce
-
     8               = weight
     PRECISION_BITS  = newWeight
     */
@@ -273,7 +330,6 @@ UINT16 getStrongJump(UINT16 strongJump){
     /*
     Regla de tres INVERSA
     (Las pruebas se hicieron con desplazamientos de 8 (3 bits), de esta manera, si se cambia esto, la fisica se adapta)
-
     8               = strongJump
     PRECISION_BITS  = newStrongJump
     */
@@ -286,11 +342,12 @@ void main() {
     //printf("Inicio del programa");
 
     //Declaracion
+    UINT16 frame;
     UINT16 temp;
     UINT16 temp2;
     UWORD count;
 
-    UINT16 screenCountX;
+    UINT8 screenCountX;
 
     //Maneja el contador de numero de enemigos en el nivel
     UINT8 numberEnemiesPopo;
@@ -331,20 +388,28 @@ void main() {
     HIDE_BKG;
     HIDE_WIN;
 
-    // los tiles y el mapa estan en el banco 2 de la ROM, el primero es de 16 kb solo y se debe reservar para el codigo
-    //SWITCH_ROM_MBC1(2);
+    //Tiles del fondo
+    SWITCH_ROM_MBC1(2);//Banco de memoria 3
+    //posicion inicial, numero y tiles
+    set_bkg_data(0, 3, MAP_TILES);
 
-    //Background
-    //Carga en la VRAM los tiles para los fondos
-    //Pharams: posicion de memoria, cantidad de tiles, tiles
-    //set_bkg_data(0, 131, TILES_BG);
-    //Carga el mapa de tiles
-    //Pharams: x, y, width, height, mapa
-    //set_bkg_tiles(0, 0, 20, 18, LEVEL_MAP);
+    //Sprites
+    //Carga en la VRAM los tiles para los sprites
+    SPRITES_8x16;
+    SWITCH_ROM_MBC1(3);//Salto al banco de memoria 2
+    //posicion de memoria, cantidad de tiles, tiles
+    set_sprite_data(0, TOTAL_TILES, SPRITE_TILES);
+    //Asigna a un sprite un tile
+    //numero del sprite (0-39), posicion del tile
+    set_sprite_tile(SPRITE_DIGIT_1A, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_2A, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_3A, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_4A, TILE_0);
 
-
-    //Tiles del fondo, posicion inicial, numero y tiles
-    set_bkg_data(0, 3, LEVEL_TILES);
+    set_sprite_tile(SPRITE_DIGIT_1B, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_2B, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_3B, TILE_0);
+    set_sprite_tile(SPRITE_DIGIT_4B, TILE_0);
 
     //set_bkg_tiles(indexX(8 pixelex), indexY(8 pixelex), ancho, alto y mapa)
     //Viejo sistema, hasta 32 tiles me vale...
@@ -354,11 +419,11 @@ void main() {
     /**
     El bucle rellena la pantalla de tiles de arriba a abajo (Se recorre en Y),
     haciendo una fila completa de 22 tiles (los que entran en la pantalla)
-
     Al final de cada iteracion mueve el puntero 64 tiles (El tamaño en X del mapa)
     para que en la siguiente iteracion apunte a la nueva fila de la matriz
     */
 
+    SWITCH_ROM_MBC1(4);//Banco de memoria 4
     //Seria 32 pero solo quiero llenar la parte visible de la pantalla (144 pixels = 18 tiles)
     for(count = 0; count != 18; count++ ){//18 son los tiles que entran en la pantalla en alto
 
@@ -370,26 +435,6 @@ void main() {
 		temp = temp + MAP_SIZE_X;
 
     }
-
-
-
-    //Sprites
-    //Carga en la VRAM los tiles para los sprites
-    //Pharams: posicion de memoria, cantidad de tiles, tiles
-    set_sprite_data(0, TOTAL_TILES, SPRITE_TILES);
-
-    SPRITES_8x16;
-    //Asigna a un sprite un tile
-    //Pharams: numero del sprite (0-39), posicion del tile
-    set_sprite_tile(SPRITE_DIGIT_1A, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_2A, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_3A, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_4A, TILE_0);
-
-    set_sprite_tile(SPRITE_DIGIT_1B, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_2B, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_3B, TILE_0);
-    set_sprite_tile(SPRITE_DIGIT_4B, TILE_0);
 
     SHOW_BKG;//Muestra el fondo
     SHOW_SPRITES;//Muestra los sprites
@@ -426,10 +471,7 @@ void main() {
         enemyPopoList[count].state = STATE_IDLE;
         enemyPopoList[count].active = TRUE;
     }
-
-
-
-
+    frame = 0;
     while(TRUE) {
 
         keys = joypad();//Lee el pad
@@ -534,13 +576,13 @@ void main() {
         //Maquina de estado del player
         switch(player.state){
             case STATE_RUN:
-                player.frame = getPlayerFrameRun(sys_time, player.frame);
+                player.frame = getPlayerFrameRun(frame, player.frame);
                 break;
             case STATE_JUMP:
                 break;
             default:
                 if(isInGround){
-                    player.frame = getPlayerFrameIdle(sys_time, player.frame);
+                    player.frame = getPlayerFrameIdle(frame, player.frame);
                 }
                 break;
         }
@@ -553,20 +595,15 @@ void main() {
         {
             temp = (SPRITE_ENEMY_1 + count);
             if(enemyPopoList[count].active == TRUE
-               &&
-               camera.x < (enemyPopoList[count].x DEC_BITS))
-               /*
-               isInScreen(camera.x, camera.y,
-                             (enemyPopoList[count].x DEC_BITS),
-                             (enemyPopoList[count].y DEC_BITS),
-                             ENEMY_POPO_WIDTH,
-                             ENEMY_POPO_HEIGHT) == TRUE)
-                             */
-            {
+
+               //&& camera.x < (enemyPopoList[count].x DEC_BITS))
+
+               && isInScreen(camera.x, (enemyPopoList[count].x DEC_BITS), ENEMY_POPO_WIDTH) == TRUE
+            ){
                     switch(enemyPopoList[count].state){
                     case STATE_RUN:
                     case STATE_IDLE:
-                        enemyPopoList[count].frame = getEnemyPopoFrameIdle(sys_time, enemyPopoList[count].frame);
+                        enemyPopoList[count].frame = getEnemyPopoFrameIdle(frame, enemyPopoList[count].frame);
                     break;
                 }
 
@@ -615,7 +652,6 @@ void main() {
             Posiciona el indice X en la posicion del vector a rellenar
             camera.x>>3 es la suma de tiles de 8x8 avanzados: camera.x/8
             Ejemplo: el primer tile que se avance sera 1 + 21 = 22
-
             Como el tile que queremos rellenar de mas a la derecha se encuentra fuera de la pantalla (20 tiles)
             sumo 21
             */
@@ -671,10 +707,9 @@ void main() {
         //drawPointsB(camera.x/8, 5, SCREEN_WIDTH - (8*4), 16);//hasta 65536
 
 
-
+        frame++;
+        frame = frame%100;
     }
     //puts("gameFrame32:");
 
 }
-
-

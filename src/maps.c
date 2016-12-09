@@ -1,12 +1,4 @@
-#ifndef MAPS_H_INCLUDED
-#define MAPS_H_INCLUDED
 
-#define MAP_SIZE_X 64
-#define MAP_SIZE_Y 18
-#define LEVEL_WIDTH (MAP_SIZE_X * 8)
-#define LEVEL_HEIGHT (MAP_SIZE_Y * 8)
-
-//Level map
 const unsigned char LEVEL1[] =
 {
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

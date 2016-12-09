@@ -1,6 +1,5 @@
 #ifndef COLLISION_H_INCLUDED
 #define COLLISION_H_INCLUDED
-#include <gb/gb.h>
 
 UINT16 isCollisonDown(UINT16 x, UINT16 y, UINT16 w, UINT16 h, UINT16 mapSizeX, unsigned char *levelCollision);
 UINT16 isCollisionUp(UINT16 x, UINT16 y, UINT16 w, UINT16 mapSizeX, unsigned char *levelCollision);
